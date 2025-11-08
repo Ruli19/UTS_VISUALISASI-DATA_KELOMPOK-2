@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🛍️ Interactive Customer Analytics Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      /* Konten dari style.css di-embed di sini */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Roboto", sans-serif;
+        background: linear-gradient(135deg, #4a6fa5 0%, #2c5282 100%);
+        color: #1a1a1a;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .dashboard {
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+
+      header {
+        background: rgba(243, 240, 235, 0.98);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        animation: slideDown 0.6s ease-out;
+        border-bottom: 4px solid #4a6fa5;
+      }
+
+      /* Penataan untuk Bagian Penjelasan Dataset (Teks tanpa bold) */
+      .dataset-info {
+        margin-top: 30px;
+        padding: 25px;
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      }
+      .dataset-info h2 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+        color: #4a6fa5;
+      }
+      .dataset-info ul {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 15px;
+      }
+      .dataset-info ul li {
+        padding: 5px 0;
+        border-bottom: 1px dashed #e5e5e5;
+      }
+      .dataset-info ul li:last-child {
+        border-bottom: none;
+      }
+
+      .write-up {
+        margin-top: 30px;
+        padding: 25px;
+        background: #f7f7f7;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #2c5282;
+      }
+      .write-up h2 {
+        font-size: 1.6em;
+        color: #2c5282;
+        margin-bottom: 15px;
+      }
+      .write-up h3 {
+        font-size: 1.2em;
+        color: #4a6fa5;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        border-bottom: 1px dashed #ccc;
+        padding-bottom: 5px;
+      }
+      .write-up table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 0.9em;
+      }
+      .write-up th,
+      .write-up td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+      .write-up th {
+        background-color: #e5e7eb;
+        font-weight: bold;
+        color: #1f2937;
+      }
+
+      h1 {
+        font-size: 2.5em;
+        color: #2c5282;
+        text-align: center;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #4a6fa5;
+        font-size: 1.2em;
+        margin-top: 10px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .grid-full-width {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+      }
+
+      .card h3 {
+        font-size: 1.4em;
+        margin-bottom: 15px;
+        color: #2c5282;
+        border-bottom: 2px solid #e5e5e5;
+        padding-bottom: 10px;
+      }
+
+      .chart-container {
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative; /* Penting untuk penempatan tombol */
+      }
+
+      /* Filter Section Styling */
+      .filter-section {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding: 20px 0;
+        justify-content: center;
+        align-items: flex-end;
+        margin-bottom: 20px;
+        background: #f7f7f7;
+        border-radius: 12px;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+      }
+
+      .filter-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #4a6fa5;
+        font-size: 0.95em;
+      }
+
+      .filter-group select,
+      .filter-group input[type="range"] {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background-color: #ffffff;
+        font-size: 1em;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .filter-group select:focus,
+      .filter-group input[type="range"]:focus {
+        outline: none;
+        border-color: #4a6fa5;
+        box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.3);
+      }
+
+      .range-value {
+        font-weight: 700;
+        color: #2c5282;
+        margin-top: 5px;
+        font-size: 0.9em;
+        text-align: center;
+      }
+
+      .reset-btn {
+        width: 100%;
+        max-width: 300px;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(118, 75, 162, 0.5);
+        margin-top: 20px;
+      }
+
+      .reset-btn:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(118, 75, 162, 0.6);
+      }
+
+      /* D3/SVG Specific Styling */
+      .axis line,
+      .axis path {
+        shape-rendering: crispEdges;
+        stroke: #999;
+      }
+
+      .axis text {
+        font-size: 12px;
+        fill: #555;
+      }
+
+      /* Tooltip */
+      .tooltip {
+        position: absolute;
+        text-align: center;
+        padding: 10px 15px;
+        background: rgba(44, 82, 130, 0.95);
+        color: white;
+        border: 0px;
+        border-radius: 8px;
+        pointer-events: none;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+      }
+
+      /* Brush Style */
+      .selection {
+        fill: #4a6fa5;
+        fill-opacity: 0.3;
+        stroke: #4a6fa5;
+      }
+
+      /* Zoom Buttons Styling */
+      .zoom-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        z-index: 5;
+      }
+      .zoom-controls button {
+        width: 30px;
+        height: 30px;
+        background: #2c5282;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: background 0.2s;
+      }
+      .zoom-controls button:hover {
+        background: #4a6fa5;
+      }
+      .zoom-controls button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      /* Legend */
+      .legend {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 10px 0;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 0 15px 10px 0;
+        font-size: 0.9em;
+        color: #555;
+        cursor: default;
+        transition: transform 0.2s ease;
+      }
+
+      .legend-item:hover {
+        transform: scale(1.05);
+      }
+
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        margin-right: 8px;
+      }
+
+      .viz-caption {
+        text-align: center;
+        color: #718096;
+        font-size: 0.85em;
+        margin-top: 15px;
+        font-style: italic;
+      }
+
+      /* Footer & Reset Button */
+      footer {
+        text-align: center;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        margin-top: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <header>
+        <h1>🛍️ Interactive Customer Analytics Dashboard</h1>
+        <p class="subtitle">
+          Eksplorasi Pola Belanja, Demografi, dan Respons Kampanye Pemasaran
+        </p>
+
+        <div class="dataset-info">
+          <h2>ℹ️ Tentang Dataset Kampanye Pemasaran</h2>
+          <p>
+            Dataset ini berisi data pelanggan yang merupakan hasil dari kampanye
+            pemasaran sebuah perusahaan ritel. Setiap baris merepresentasikan
+            profil seorang pelanggan, mencakup informasi penting seperti:
+          </p>
+          <ul>
+            <li>
+              Demografi: Pendapatan (Income), Tahun Lahir (Year_Birth),
+              Pendidikan, Status Pernikahan.
+            </li>
+            <li>
+              Perilaku Belanja: Jumlah pengeluaran untuk 6 kategori produk
+              (MntWines, MntMeatProducts, dll.), saluran pembelian (Web, Store,
+              Catalog).
+            </li>
+            <li>
+              Respon Kampanye: Status penerimaan untuk 5 kampanye promosi
+              terakhir (AcceptedCmp1 hingga AcceptedCmp5) dan respons untuk
+              kampanye terakhir (Response).
+            </li>
+          </ul>
+
+          <h2>🔎 Fokus Analisis Utama Dashboard</h2>
+          <p>
+            Dashboard ini bersifat interaktif. Anda dapat memfilter pelanggan
+            berdasarkan kriteria tertentu (misalnya, hanya pelanggan dengan
+            pendapatan tinggi atau pendidikan "Graduation") dan melihat
+            bagaimana perubahan filter memengaruhi 4 visualisasi utama: Pola
+            Belanja Produk, Pengeluaran vs Pendapatan, Distribusi Usia & Respons
+            Kampanye, dan Kinerja Saluran Pembelian.
+          </p>
+        </div>
+
+        <div class="write-up">
+          <h2>📊 Laporan Pengembangan dan Alasan Desain Dashboard</h2>
+
+          <h3>I. Alasan (Rationale) untuk Keputusan Desain Visualisasi</h3>
+          <p>
+            Dashboard ini dirancang dengan filosofi
+            <strong>Analisis Terpandu (Guided Analysis)</strong> dan
+            <strong>Fokus pada Perbandingan</strong>, memanfaatkan kekuatan
+            D3.js untuk interaktivitas tingkat tinggi.
+          </p>
+
+          <table>
+            <tr>
+              <th>Grafik</th>
+              <th>Desain Pilihan</th>
+              <th>Alasan Keputusan</th>
+            </tr>
+            <tr>
+              <td><strong>Pola Belanja Produk</strong></td>
+              <td>Bar Chart Horizontal (Sorted)</td>
+              <td>
+                <strong>Jelas dan Terurut:</strong> Penggunaan bar horizontal
+                memudahkan pembacaan label produk yang panjang.
+                <strong>Sorting</strong> berdasarkan total pengeluaran membantu
+                pengguna segera mengidentifikasi produk paling populer dalam
+                segmen yang sedang difilter.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Pengeluaran vs. Pendapatan</strong></td>
+              <td>Scatter Plot Multi-Variat</td>
+              <td>
+                <strong>Korelasi dan Outlier:</strong> Scatter plot adalah
+                pilihan superior untuk memvisualisasikan
+                <strong>korelasi</strong> antara dua variabel kontinu.
+                Pengkodean <strong>warna</strong> (Marital Status) dan
+                <strong>ukuran</strong> titik (Total Kids) memungkinkan analisis
+                4 dimensi sekaligus.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Distribusi Usia & Respon</strong></td>
+              <td>Grouped Bar Chart</td>
+              <td>
+                <strong>Fokus Perbandingan Absolut:</strong> tujuan utamanya
+                adalah membandingkan <strong>jumlah absolut</strong> Respon vs.
+                Non-Respon di setiap kelompok usia, menghilangkan ambiguitas
+                perbandingan tinggi segmen.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Kinerja Channel & Campaign</strong></td>
+              <td>Bar Chart Horizontal</td>
+              <td>
+                <strong>Akurasi Perbandingan:</strong> Bar chart (terutama
+                horizontal) jauh lebih akurat dalam merepresentasikan persentase
+                atau rata-rata daripada Pie Chart.
+              </td>
+            </tr>
+          </table>
+
+          <h3>II. Pilihan Interaksi & Animasi</h3>
+          <p>
+            Fitur interaktif dirancang untuk memungkinkan eksplorasi data yang
+            mendalam dan memberikan umpan balik visual yang koheren.
+          </p>
+          <ul>
+            <li>
+              <strong>Brushing & Linking (Scatter Plot):</strong> Memungkinkan
+              pengguna untuk secara instan mengisolasi dan memahami
+              karakteristik demografi (Pendapatan/Pengeluaran) dari subkelompok
+              yang diseleksi (<strong>Exploratory Data Analysis / EDA</strong>).
+            </li>
+            <li>
+              <strong>Dynamic Filters (Global):</strong> Filter demografi
+              diterapkan ke <strong>semua</strong> 5 visualisasi (<strong
+                >Coordinated Views</strong
+              >), memastikan analisis yang koheren dan terpadu.
+            </li>
+            <li>
+              <strong>Transisi D3 (`.transition().duration(800)`):</strong>
+              Animasi yang halus diterapkan pada update data untuk membantu mata
+              pengguna <strong>melacak perubahan</strong> pada bar atau titik
+              data setelah filter diterapkan.
+            </li>
+            <li>
+              <strong>Tooltip (Detail-on-Demand):</strong> Menyediakan nilai
+              numerik presisi untuk melengkapi representasi visual.
+            </li>
+          </ul>
+
+          <h3>III. Gambaran Umum Proses Pengembangan</h3>
+          <h4>Pembagian Kerja (Asumsi Proyek Tim)</h4>
+          <ul>
+            <li>
+              <strong>Analyst & Preprocessor:</strong> Pembersihan data,
+              perhitungan variabel turunan (`Age`, `TotalSpending`), dan
+              penetapan visual encoding.
+            </li>
+            <li>
+              <strong>Frontend/Filter Specialist:</strong> Membangun struktur
+              HTML/CSS dan mengembangkan logika Javascript untuk
+              <strong>Filter Global</strong> yang menghubungkan input pengguna
+              dengan pembaruan data.
+            </li>
+            <li>
+              <strong>D3.js Visualization Specialist:</strong> Mengembangkan
+              fungsi inti D3.js, termasuk implementasi logika Grouped Bar dan
+              fitur interaktif lanjutan (Brush, Zoom/Pan).
+            </li>
+          </ul>
+
+          <h4>Alokasi Waktu (Estimasi dalam Jam/Orang)</h4>
+          <p>
+            Diperkirakan total waktu pengembangan adalah sekitar
+            <strong>30-40 jam/orang</strong>. Aspek yang memakan waktu paling
+            banyak adalah:
+          </p>
+          <ol>
+            <li>
+              <strong>Zoom dan Pan pada Scatter Plot (±10 jam):</strong>
+              Menerapkan kontrol manual untuk <strong>Zooming</strong> dan
+              <strong>Panning</strong> di D3 memerlukan logika transformasi yang
+              rumit untuk memastikan skala ulang sumbu dan batasan geser
+              (`currentTransform`) diterapkan dengan benar.
+            </li>
+            <li>
+              <strong>Koordinasi Tampilan dan Filter Global (±8 jam):</strong>
+              Memastikan semua grafik diperbarui secara efisien dan menangani
+              transisi/exit data setelah pemfilteran.
+            </li>
+          </ol>
+        </div>
+      </header>
+
+      <div class="card filter-section">
+        <h3>⚙️ Filter Dataset Pelanggan</h3>
+        <div class="filter-group">
+          <label for="education-filter">Pendidikan:</label>
+          <select id="education-filter">
+            <option value="All">Semua Tingkat</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="marital-filter">Status Pernikahan:</label>
+          <select id="marital-filter">
+            <option value="All">Semua Status</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="income-filter">Pendapatan Minimum:</label>
+          <input
+            type="range"
+            id="income-filter"
+            min="0"
+            max="150000"
+            step="1000"
+          />
+          <div class="range-value" id="income-value">Rp 0</div>
+        </div>
+        <div class="filter-group">
+          <label for="kids-filter">Jumlah Anak (Max):</label>
+          <input type="range" id="kids-filter" min="0" max="3" step="1" />
+          <div class="range-value" id="kids-value">3</div>
+        </div>
+        <button id="reset-btn" class="reset-btn">🔄 Reset Semua Filter</button>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>💰 Pola Belanja Produk (Total Pengeluaran)</h3>
+          <div class="chart-container">
+            <svg id="product-chart" width="750" height="450"></svg>
+          </div>
+          <p class="viz-caption">
+            Total pengeluaran pelanggan untuk 6 kategori produk.
+          </p>
+          <div id="product-legend" class="legend"></div>
+        </div>
+
+        <div class="card">
+          <h3>💵 Pengeluaran Total vs. Pendapatan</h3>
+          <div class="chart-container">
+            <div class="zoom-controls">
+              <button id="zoom-in">+</button>
+              <button id="zoom-out">-</button>
+              <button id="pan-up" title="Geser Atas">▲</button>
+              <button id="pan-down" title="Geser Bawah">▼</button>
+              <button id="pan-left" title="Geser Kiri">◀</button>
+              <button id="pan-right" title="Geser Kanan">▶</button>
+              <button id="zoom-reset">⟲</button>
+            </div>
+            <svg id="scatter-plot" width="750" height="450"></svg>
+          </div>
+          <p class="viz-caption">
+            Warna merepresentasikan Status Pernikahan, dan ukuran lingkaran
+            merepresentasikan Jumlah Anak. Gunakan
+            <strong>klik-drag</strong> untuk <strong>Seleksi (Brush)</strong>.
+            Gunakan <strong>tombol di samping</strong> untuk
+            <strong>Zoom</strong> dan <strong>Geser (Pan)</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>📈 Age Distribution by Campaign Response</h3>
+          <div class="chart-container">
+            <svg id="histogram-chart" width="750" height="450"></svg>
+          </div>
+          <p class="viz-caption">
+            Batang Hijau: Pelanggan yang merespons | Batang Merah: Pelanggan
+            yang tidak merespons
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>🛍️ Analisis Saluran Pembelian (Channel Performance)</h3>
+          <div class="chart-container">
+            <svg id="channel-chart" width="750" height="450"></svg>
+          </div>
+          <p class="viz-caption">
+            Membandingkan rata-rata pembelian melalui Web, Katalog, dan Toko
+            Fisik untuk segmen yang difilter.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-full-width">
+        <div class="card">
+          <h3>🎯 Tingkat Penerimaan Kampanye (Campaign Acceptance Rate)</h3>
+          <div class="chart-container">
+            <svg id="campaign-chart" width="100%" height="300"></svg>
+          </div>
+          <p class="viz-caption">
+            Persentase pelanggan yang menerima tawaran di setiap dari 6 kampanye
+            promosi (AcceptedCmp1 s/d AcceptedCmp5 dan Response).
+          </p>
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          Data Source: Marketing Campaign Dataset (Kaggle) | Visualization Tool:
+          D3.js v7
+        </p>
+        <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8">
+          This interactive dashboard allows you to explore customer behavior
+          patterns by filtering demographics and observing changes across
+          multiple coordinated visualizations.
+        </p>
+      </footer>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+      // --- KONFIGURASI GLOBAL ---
+      const margin = { top: 30, right: 40, bottom: 60, left: 70 };
+      const ZOOM_FACTOR = 1.2; // Faktor seberapa besar zoom setiap kali tombol ditekan
+      const PAN_DISTANCE = 50; // Jarak geser setiap kali tombol ditekan
+
+      // Palet warna untuk Produk (Stacked Bar)
+      const colorScale = d3
+        .scaleOrdinal()
+        .domain([
+          "MntWines",
+          "MntFruits",
+          "MntMeatProducts",
+          "MntFishProducts",
+          "MntSweetProducts",
+          "MntGoldProds",
+        ])
+        .range([
+          "#8b5cf6",
+          "#ec4899",
+          "#f59e0b",
+          "#10b981",
+          "#3b82f6",
+          "#6366f1",
+        ]); // Purple, Pink, Amber, Emerald, Blue, Indigo
+
+      // Palet warna untuk Status Pernikahan (Scatter Plot)
+      const maritalColor = d3
+        .scaleOrdinal()
+        .domain([
+          "Single",
+          "Together",
+          "Married",
+          "Divorced",
+          "Widow",
+          "Alone",
+          "YOLO",
+          "Absurd",
+        ])
+        .range([
+          "#ef4444", // Red
+          "#f59e0b", // Amber
+          "#3b82f6", // Blue
+          "#10b981", // Emerald
+          "#a855f7", // Purple
+          "#64748b", // Slate
+          "#22c55e", // Green
+          "#f97316", // Orange
+        ]);
+
+      let fullData = [];
+      let filteredData = [];
+
+      // Simpan Transformasi saat ini (untuk zoom/pan)
+      let currentTransform = d3.zoomIdentity;
+      const initialTransform = d3.zoomIdentity;
+
+      // --- PREPROCESSING DATA ---
+
+      function preprocessData(data) {
+        const currentYear = new Date().getFullYear();
+
+        return data
+          .map((d) => {
+            // Konversi string ke angka, menangani nilai yang hilang (missing values)
+            const income = parseFloat(d.Income);
+
+            return {
+              ID: d.ID,
+              Year_Birth: +d.Year_Birth,
+              Education: d.Education,
+              Marital_Status: d.Marital_Status,
+              Income: isNaN(income) ? 0 : income, // Jika hilang/invalid, set ke 0 (atau bisa di-filter)
+              Kidhome: +d.Kidhome,
+              Teenhome: +d.Teenhome,
+              Dt_Customer: new Date(d.Dt_Customer),
+              Recency: +d.Recency,
+              MntWines: +d.MntWines,
+              MntFruits: +d.MntFruits,
+              MntMeatProducts: +d.MntMeatProducts,
+              MntFishProducts: +d.MntFishProducts,
+              MntSweetProducts: +d.MntSweetProducts,
+              MntGoldProds: +d.MntGoldProds,
+              NumDealsPurchases: +d.NumDealsPurchases,
+              NumWebPurchases: +d.NumWebPurchases,
+              NumCatalogPurchases: +d.NumCatalogPurchases,
+              NumStorePurchases: +d.NumStorePurchases,
+              NumWebVisitsMonth: +d.NumWebVisitsMonth,
+              AcceptedCmp1: +d.AcceptedCmp1,
+              AcceptedCmp2: +d.AcceptedCmp2,
+              AcceptedCmp3: +d.AcceptedCmp3,
+              AcceptedCmp4: +d.AcceptedCmp4,
+              AcceptedCmp5: +d.AcceptedCmp5,
+              Complain: +d.Complain,
+              Response: +d.Response,
+              // Kolom turunan
+              TotalSpending:
+                +d.MntWines +
+                +d.MntFruits +
+                +d.MntMeatProducts +
+                +d.MntFishProducts +
+                +d.MntSweetProducts +
+                +d.MntGoldProds,
+              TotalKids: +d.Kidhome + +d.Teenhome,
+              Age: currentYear - +d.Year_Birth,
+              TotalPurchases:
+                +d.NumWebPurchases +
+                +d.NumCatalogPurchases +
+                +d.NumStorePurchases,
+            };
+          })
+          .filter((d) => d.Income > 0 && d.Age < 100); // Filter data dengan Income > 0 dan usia realistis
+      }
+
+      // --- TOOLTIP HANDLER ---
+
+      const tooltip = d3.select("#tooltip");
+
+      function showTooltip(html, event) {
+        tooltip
+          .style("opacity", 1)
+          .html(html)
+          .style("left", event.pageX + 15 + "px")
+          .style("top", event.pageY - 28 + "px");
+      }
+
+      function hideTooltip() {
+        tooltip.style("opacity", 0);
+      }
+
+      // --- FILTER LOGIC ---
+
+      function setupFilters() {
+        // Setup Education Filter
+        const educationOptions = Array.from(
+          new Set(fullData.map((d) => d.Education))
+        ).sort();
+        const educationFilter = d3.select("#education-filter");
+        educationOptions.forEach((opt) => {
+          educationFilter.append("option").attr("value", opt).text(opt);
+        });
+
+        // Setup Marital Status Filter
+        const maritalOptions = Array.from(
+          new Set(fullData.map((d) => d.Marital_Status))
+        ).sort();
+        const maritalFilter = d3.select("#marital-filter");
+        maritalOptions.forEach((opt) => {
+          maritalFilter.append("option").attr("value", opt).text(opt);
+        });
+
+        // Setup Income Filter Range
+        const maxIncome = d3.max(fullData, (d) => d.Income);
+        const incomeRange = d3.select("#income-filter");
+        incomeRange.attr("max", maxIncome).attr("value", 0);
+        d3.select("#income-value").text(
+          `Rp 0 - Rp ${d3.format(",")(Math.round(maxIncome))}`
+        );
+
+        // Setup Kids Filter Range
+        const maxKids = d3.max(fullData, (d) => d.TotalKids);
+        const kidsRange = d3.select("#kids-filter");
+        kidsRange.attr("max", maxKids).attr("value", maxKids);
+        d3.select("#kids-value").text(maxKids);
+
+        // Listener untuk semua filter dan tombol reset
+        d3.selectAll(
+          "#education-filter, #marital-filter, #income-filter, #kids-filter"
+        ).on("change", applyFilters);
+        d3.select("#reset-btn").on("click", resetFilters);
+      }
+
+      function updateRangeDisplay() {
+        const maxIncome = d3.max(fullData, (d) => d.Income);
+        const minIncome = +d3.select("#income-filter").property("value");
+        const maxKids = +d3.select("#kids-filter").property("value");
+
+        d3.select("#income-value").text(
+          `Rp ${d3.format(",")(minIncome)} - Rp ${d3.format(",")(
+            Math.round(maxIncome)
+          )}`
+        );
+        d3.select("#kids-value").text(maxKids);
+      }
+
+      function applyFilters() {
+        updateRangeDisplay();
+        const education = d3.select("#education-filter").property("value");
+        const marital = d3.select("#marital-filter").property("value");
+        const minIncome = +d3.select("#income-filter").property("value");
+        const maxKids = +d3.select("#kids-filter").property("value");
+
+        filteredData = fullData.filter((d) => {
+          const eduMatch = education === "All" || d.Education === education;
+          const maritalMatch =
+            marital === "All" || d.Marital_Status === marital;
+          const incomeMatch = d.Income >= minIncome;
+          const kidsMatch = d.TotalKids <= maxKids;
+          return eduMatch && maritalMatch && incomeMatch && kidsMatch;
+        });
+
+        // Reset zoom state saat filter berubah
+        currentTransform = initialTransform;
+
+        updateAllCharts(filteredData);
+        console.log("Data filtered. Records:", filteredData.length);
+      }
+
+      function resetFilters() {
+        d3.select("#education-filter").property("value", "All");
+        d3.select("#marital-filter").property("value", "All");
+
+        const maxIncome = d3.max(fullData, (d) => d.Income);
+        d3.select("#income-filter").property("value", 0);
+
+        const maxKids = d3.max(fullData, (d) => d.TotalKids);
+        d3.select("#kids-filter").property("value", maxKids);
+
+        // Reset zoom state
+        currentTransform = initialTransform;
+
+        applyFilters();
+      }
+
+      // --- SCATTER PLOT MANUAL ZOOM/PAN LOGIC ---
+
+      // Fungsi untuk memperbarui grafik setelah perubahan transform (dipanggil oleh tombol)
+      function updateScatterPlotTransform(
+        newTransform,
+        x,
+        y,
+        xAxis,
+        yAxis,
+        scatterGroup,
+        width,
+        height
+      ) {
+        // Terapkan batas Pan/Geser. Batasi translate agar tidak melihat keluar dari data original (saat k=1)
+        // Meskipun kita ingin bebas geser saat k>1 (zoom in), kita tetap perlu membatasi
+        // pergeseran ketika zoom minimal (k=1)
+        const k = newTransform.k;
+        const xMin = 0;
+        const xMax = width;
+        const yMin = 0;
+        const yMax = height;
+
+        // Batasi tX agar titik 0 pada sumbu x tidak bergeser melebihi batas kiri/kanan
+        // Batasi tY agar titik max pada sumbu y tidak bergeser melebihi batas atas/bawah
+        let tX = newTransform.x;
+        let tY = newTransform.y;
+
+        // Batas Horizontal
+        tX = Math.max(tX, -width * (k - 1)); // Titik terjauh (kanan) tidak bisa bergeser ke kiri terlalu jauh
+        tX = Math.min(tX, (width * (k - 1)) / k); // Batas kiri tidak bisa bergeser terlalu jauh ke kanan (saat k=1, tX<=0)
+        tX = Math.min(tX, 0); // Pastikan sumbu y tidak bergeser terlalu jauh ke kanan
+
+        // Batas Vertikal
+        tY = Math.max(tY, -height * (k - 1)); // Batas bawah tidak bisa bergeser terlalu jauh ke atas
+        tY = Math.min(tY, (height * (k - 1)) / k); // Batas atas tidak bisa bergeser terlalu jauh ke bawah (saat k=1, tY<=0)
+        tY = Math.min(tY, 0); // Pastikan sumbu x tidak bergeser terlalu jauh ke bawah
+
+        const finalTransform = d3.zoomIdentity.translate(tX, tY).scale(k);
+        currentTransform = finalTransform;
+
+        const newX = finalTransform.rescaleX(x);
+        const newY = finalTransform.rescaleY(y);
+
+        xAxis.call(d3.axisBottom(newX).tickFormat(d3.format(".2s")));
+        yAxis.call(d3.axisLeft(newY).tickFormat(d3.format(".2s")));
+
+        // Pindahkan dan skala ulang titik-titik
+        scatterGroup
+          .selectAll(".dot")
+          .attr("cx", (d) => newX(d.Income))
+          .attr("cy", (d) => newY(d.TotalSpending));
+
+        // Perbarui status tombol
+        d3.select("#zoom-in").property("disabled", finalTransform.k >= 10);
+        d3.select("#zoom-out").property("disabled", finalTransform.k <= 1);
+      }
+
+      // Fungsi untuk Pan/Geser (Menerapkan transform translate)
+      function pan(direction, x, y, xAxis, yAxis, scatterGroup, width, height) {
+        let dx = 0,
+          dy = 0;
+
+        switch (direction) {
+          case "up":
+            dy = PAN_DISTANCE;
+            break;
+          case "down":
+            dy = -PAN_DISTANCE;
+            break;
+          case "left":
+            dx = PAN_DISTANCE;
+            break;
+          case "right":
+            dx = -PAN_DISTANCE;
+            break;
+        }
+
+        // Transformasi baru
+        const newTransform = currentTransform.translate(
+          dx / currentTransform.k,
+          dy / currentTransform.k
+        );
+        updateScatterPlotTransform(
+          newTransform,
+          x,
+          y,
+          xAxis,
+          yAxis,
+          scatterGroup,
+          width,
+          height
+        );
+      }
+
+      // --- CHART DRAWING FUNCTIONS ---
+
+      // 1. Stacked Bar Chart (Product Spending)
+      function drawProductChart(data) {
+        // ... (Kode drawProductChart tetap sama)
+        const svgId = "#product-chart";
+        const width =
+          d3.select(svgId).node().getBoundingClientRect().width -
+          margin.left -
+          margin.right;
+        const height = 450 - margin.top - margin.bottom;
+
+        d3.select(svgId).selectAll("*").remove();
+
+        const svg = d3
+          .select(svgId)
+          .attr(
+            "viewBox",
+            `0 0 ${width + margin.left + margin.right} ${
+              height + margin.top + margin.bottom
+            }`
+          )
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        const productFields = colorScale.domain();
+
+        // Hitung total pengeluaran per kategori
+        const totals = productFields.map((key) => ({
+          product: key,
+          value: d3.sum(data, (d) => d[key]),
+        }));
+
+        // Sortir dari total tertinggi ke terendah
+        totals.sort((a, b) => b.value - a.value);
+
+        // Skala X (Total Pengeluaran)
+        const x = d3
+          .scaleLinear()
+          .domain([0, d3.max(totals, (d) => d.value) * 1.05])
+          .range([0, width]);
+
+        // Skala Y (Produk)
+        const y = d3
+          .scaleBand()
+          .domain(totals.map((d) => d.product))
+          .range([0, height])
+          .padding(0.3);
+
+        // Axis X
+        svg
+          .append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x).tickFormat(d3.format(".2s")));
+
+        // Label Sumbu X
+        svg
+          .append("text")
+          .attr("class", "x-label")
+          .attr("x", width / 2)
+          .attr("y", height + margin.bottom - 10)
+          .style("text-anchor", "middle")
+          .style("fill", "#4a6fa5")
+          .style("font-weight", "bold")
+          .text("Total Pengeluaran (Rp)");
+
+        // Axis Y
+        const yAxis = d3.axisLeft(y).tickFormat((d) => d.replace("Mnt", ""));
+        svg.append("g").attr("class", "y-axis").call(yAxis);
+
+        // Bar
+        const bars = svg
+          .selectAll(".bar")
+          .data(totals, (d) => d.product)
+          .join(
+            (enter) =>
+              enter
+                .append("rect")
+                .attr("class", "bar")
+                .attr("y", (d) => y(d.product))
+                .attr("height", y.bandwidth())
+                .attr("x", 0)
+                .attr("width", 0)
+                .attr("fill", (d) => colorScale(d.product))
+                .attr("rx", 4)
+                .attr("ry", 4)
+                .call((enter) =>
+                  enter
+                    .transition()
+                    .duration(800)
+                    .attr("width", (d) => x(d.value))
+                ),
+            (update) =>
+              update.call((update) =>
+                update
+                  .transition()
+                  .duration(800)
+                  .attr("y", (d) => y(d.product))
+                  .attr("fill", (d) => colorScale(d.product))
+                  .attr("width", (d) => x(d.value))
+              ),
+            (exit) =>
+              exit.call((exit) =>
+                exit.transition().duration(500).attr("width", 0).remove()
+              )
+          )
+          .on("mouseover", function (event, d) {
+            d3.select(this).style("filter", "brightness(1.2)");
+            showTooltip(
+              `
+                        <strong>Produk:</strong> ${d.product.replace(
+                          "Mnt",
+                          ""
+                        )}<br>
+                        Total: Rp ${d3.format(",")(d.value)}
+                        `,
+              event
+            );
+          })
+          .on("mouseout", function () {
+            d3.select(this).style("filter", null);
+            hideTooltip();
+          });
+      }
+
+      // 2. Scatter Plot (Spending vs. Income) - DITAMBAHKAN PAN/GESER & TOOLTIP POPUP BRUSH
+      function drawScatterPlot(data) {
+        const svgId = "#scatter-plot";
+        const width =
+          d3.select(svgId).node().getBoundingClientRect().width -
+          margin.left -
+          margin.right;
+        const height = 450 - margin.top - margin.bottom;
+
+        d3.select(svgId).selectAll("g").remove();
+
+        const svg = d3
+          .select(svgId)
+          .attr(
+            "viewBox",
+            `0 0 ${width + margin.left + margin.right} ${
+              height + margin.top + margin.bottom
+            }`
+          );
+
+        const g = svg
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        const maxIncome = d3.max(data, (d) => d.Income);
+        const maxSpending = d3.max(data, (d) => d.TotalSpending);
+        const maxKids = d3.max(data, (d) => d.TotalKids);
+
+        // Skala Asli
+        const x = d3
+          .scaleLinear()
+          .domain([0, maxIncome * 1.05])
+          .range([0, width]);
+
+        const y = d3
+          .scaleLinear()
+          .domain([0, maxSpending * 1.05])
+          .range([height, 0]);
+
+        // Skala Ukuran (Total Kids)
+        const radius = d3.scaleSqrt().domain([0, maxKids]).range([3, 15]);
+
+        // Definisikan Clip-path
+        g.append("defs")
+          .append("clipPath")
+          .attr("id", "clip-scatter")
+          .append("rect")
+          .attr("width", width)
+          .attr("height", height);
+
+        // Inner group untuk titik (akan di-transformasi)
+        const scatterGroup = g
+          .append("g")
+          .attr("clip-path", "url(#clip-scatter)");
+
+        // Buat Axis
+        const xAxis = g
+          .append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x).tickFormat(d3.format(".2s")));
+
+        const yAxis = g
+          .append("g")
+          .attr("class", "y-axis")
+          .call(d3.axisLeft(y).tickFormat(d3.format(".2s")));
+
+        // Terapkan Transformasi Awal
+        updateScatterPlotTransform(
+          currentTransform,
+          x,
+          y,
+          xAxis,
+          yAxis,
+          scatterGroup,
+          width,
+          height
+        );
+
+        // --- LOGIKA BRUSH (Diperbarui untuk Tooltip Pop-up) ---
+        function isBrushed(brush_coords, cx, cy) {
+          const x0 = brush_coords[0][0],
+            x1 = brush_coords[1][0],
+            y0 = brush_coords[0][1],
+            y1 = brush_coords[1][1];
+
+          return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+        }
+
+        function brushed(event) {
+          const selection = event.selection;
+
+          if (!selection) {
+            // Jika brush di-clear, reset visual dan sembunyikan tooltip
+            scatterGroup
+              .selectAll(".dot")
+              .style("opacity", 0.8)
+              .style("stroke-width", 0);
+            hideTooltip(); // <--- BARU
+            return;
+          }
+
+          // Gunakan skala yang saat ini berlaku (setelah zoom/pan)
+          const newX = currentTransform.rescaleX(x);
+          const newY = currentTransform.rescaleY(y);
+
+          const selectedData = []; // <--- BARU: Array untuk menyimpan data yang terseleksi
+
+          scatterGroup
+            .selectAll(".dot")
+            .style("opacity", 0.2) // Redupkan semua titik
+            .style("stroke-width", 0)
+            .filter(function (d) {
+              const cx = newX(d.Income);
+              const cy = newY(d.TotalSpending);
+              const isSelected = isBrushed(selection, cx, cy);
+
+              if (isSelected) {
+                selectedData.push(d); // Kumpulkan data yang terseleksi
+              }
+
+              return isSelected;
+            })
+            .style("opacity", 1) // Sorot titik yang terseleksi
+            .style("stroke", "black")
+            .style("stroke-width", 1.5);
+
+          // --- LOGIKA POPUP/TOOLTIP BRUSHING REAL-TIME --- <--- BARU
+          if (selectedData.length > 0 && event.type === "brush") {
+            const totalSelected = selectedData.length;
+            const avgIncome = d3.mean(selectedData, (d) => d.Income);
+            const avgSpending = d3.mean(selectedData, (d) => d.TotalSpending);
+
+            const tooltipContent = `
+                <strong>Terseleksi:</strong> ${totalSelected} Pelanggan<br>
+                ---<br>
+                <strong>Rata-rata Pendapatan:</strong> Rp ${d3.format(",.0f")(
+                  avgIncome
+                )}<br>
+                <strong>Rata-rata Pengeluaran:</strong> Rp ${d3.format(",.0f")(
+                  avgSpending
+                )}
+            `;
+
+            // Hitung posisi tengah brush (Selection relatif terhadap g, tambahkan margin untuk mendekati posisi dokumen)
+            const brushCenterX =
+              (selection[0][0] + selection[1][0]) / 2 + margin.left;
+            const brushCenterY =
+              (selection[0][1] + selection[1][1]) / 2 + margin.top;
+
+            // Buat event tiruan untuk showTooltip
+            const tooltipEvent = { pageX: brushCenterX, pageY: brushCenterY };
+
+            showTooltip(tooltipContent, tooltipEvent);
+          } else if (event.type === "end" || selectedData.length === 0) {
+            // Sembunyikan tooltip saat brush selesai atau jika seleksi kosong
+            hideTooltip();
+          }
+
+          // --- Tambahan: Filter Data Global berdasarkan Brush (Hanya jika seleksi stabil) ---
+          if (event.sourceEvent && event.type === "end") {
+            // selectedData sudah terisi dari logic di atas.
+
+            if (selectedData.length > 0 && selectedData.length < data.length) {
+              // Perbarui semua grafik dengan data hasil brush
+              updateAllCharts(selectedData);
+              // ... (Logika koordinasi/filter lain yang ada)
+            } else if (selection === null) {
+              // ... (Logika reset filter yang ada)
+            }
+          }
+        }
+
+        // Inisialisasi Brush
+        const brush = d3
+          .brush()
+          .extent([
+            [0, 0],
+            [width, height],
+          ])
+          .on("start brush end", brushed); // Pastikan event "brush" disertakan
+
+        g.append("g").attr("class", "brush").call(brush);
+
+        // --- FIX TOOLTIP: Angkat scatterGroup agar dot berada di atas brush layer ---
+        scatterGroup.raise(); // <--- BARIS INI DITAMBAHKAN
+
+        // --- LOGIKA TOMBOL ZOOM/PAN ---
+        d3.select("#zoom-in").on("click", () => {
+          const newTransform = currentTransform.scale(ZOOM_FACTOR);
+          updateScatterPlotTransform(
+            newTransform,
+            x,
+            y,
+            xAxis,
+            yAxis,
+            scatterGroup,
+            width,
+            height
+          );
+          d3.select(".brush").call(brush.move, null); // Hapus brush saat zoom/pan
+          hideTooltip();
+        });
+
+        d3.select("#zoom-out").on("click", () => {
+          const newTransform = currentTransform.scale(1 / ZOOM_FACTOR);
+          updateScatterPlotTransform(
+            newTransform,
+            x,
+            y,
+            xAxis,
+            yAxis,
+            scatterGroup,
+            width,
+            height
+          );
+          d3.select(".brush").call(brush.move, null); // Hapus brush saat zoom/pan
+          hideTooltip();
+        });
+
+        d3.select("#zoom-reset").on("click", () => {
+          currentTransform = initialTransform;
+          updateScatterPlotTransform(
+            currentTransform,
+            x,
+            y,
+            xAxis,
+            yAxis,
+            scatterGroup,
+            width,
+            height
+          );
+          d3.select(".brush").call(brush.move, null); // Hapus visual brush jika ada
+          hideTooltip();
+        });
+
+        d3.select("#pan-up").on("click", () => {
+          pan("up", x, y, xAxis, yAxis, scatterGroup, width, height);
+          d3.select(".brush").call(brush.move, null); // Hapus brush
+          hideTooltip();
+        });
+        d3.select("#pan-down").on("click", () => {
+          pan("down", x, y, xAxis, yAxis, scatterGroup, width, height);
+          d3.select(".brush").call(brush.move, null); // Hapus brush
+          hideTooltip();
+        });
+        d3.select("#pan-left").on("click", () => {
+          pan("left", x, y, xAxis, yAxis, scatterGroup, width, height);
+          d3.select(".brush").call(brush.move, null); // Hapus brush
+          hideTooltip();
+        });
+        d3.select("#pan-right").on("click", () => {
+          pan("right", x, y, xAxis, yAxis, scatterGroup, width, height);
+          d3.select(".brush").call(brush.move, null); // Hapus brush
+          hideTooltip();
+        });
+
+        // Label Sumbu X
+        g.append("text")
+          .attr("class", "x-label")
+          .attr("x", width / 2)
+          .attr("y", height + margin.bottom - 10)
+          .style("text-anchor", "middle")
+          .style("fill", "#4a6fa5")
+          .style("font-weight", "bold")
+          .text("Pendapatan Tahunan (Rp)");
+
+        // Label Sumbu Y
+        g.append("text")
+          .attr("class", "y-label")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0 - margin.left)
+          .attr("x", 0 - height / 2)
+          .attr("dy", "1em")
+          .style("text-anchor", "middle")
+          .style("fill", "#4a6fa5")
+          .style("font-weight", "bold")
+          .text("Total Pengeluaran (Rp)");
+
+        // Dots
+        scatterGroup
+          .selectAll(".dot")
+          .data(data, (d) => d.ID)
+          .join(
+            (enter) =>
+              enter
+                .append("circle")
+                .attr("class", "dot")
+                .attr("cx", (d) => x(d.Income))
+                .attr("cy", (d) => y(d.TotalSpending))
+                .attr("r", 0)
+                .attr("fill", (d) => maritalColor(d.Marital_Status))
+                .style("opacity", 0.8)
+                .call((enter) =>
+                  enter
+                    .transition()
+                    .duration(800)
+                    .attr("r", (d) => radius(d.TotalKids))
+                ),
+            (update) =>
+              update.call((update) =>
+                update
+                  .transition()
+                  .duration(800)
+                  .attr("cx", (d) => x(d.Income))
+                  .attr("cy", (d) => y(d.TotalSpending))
+                  .attr("r", (d) => radius(d.TotalKids))
+                  .attr("fill", (d) => maritalColor(d.Marital_Status))
+              ),
+            (exit) =>
+              exit.call((exit) =>
+                exit.transition().duration(500).attr("r", 0).remove()
+              )
+          )
+          // --- LOGIKA MOUSEOVER/TOOLTIP TITIK INDIVIDU YANG DIPERBAIKI ---
+          .on("mouseover", function (event, d) {
+            // Cek apakah ada seleksi brush yang aktif.
+            // Gunakan d3.select(".brush").node().__brush.selection untuk mengetahui status brush.
+            const isBrushing = d3.select(".brush").node()
+              ? d3.select(".brush").node().__brush.selection
+              : false;
+
+            // HANYA jika TIDAK ada brush yang aktif, tampilkan tooltip & highlight dot.
+            if (!isBrushing) {
+              d3.select(this)
+                .style("stroke", "black")
+                .style("stroke-width", 2)
+                .style("opacity", 1); // Highlight dot
+              showTooltip(
+                `
+                    <strong>Status:</strong> ${d.Marital_Status}<br>
+                    <strong>Pendapatan:</strong> Rp ${d3.format(",.0f")(
+                      d.Income
+                    )}<br>
+                    <strong>Pengeluaran:</strong> Rp ${d3.format(",.0f")(
+                      d.TotalSpending
+                    )}<br>
+                    <strong>Anak:</strong> ${d.TotalKids}
+                    `,
+                event
+              );
+            }
+          })
+          .on("mouseout", function () {
+            // Cek apakah ada seleksi brush yang aktif.
+            const isBrushing = d3.select(".brush").node()
+              ? d3.select(".brush").node().__brush.selection
+              : false;
+
+            // HANYA jika TIDAK ada brush yang aktif, sembunyikan tooltip & hapus highlight.
+            if (!isBrushing) {
+              // Pastikan opacity kembali ke 0.8 default
+              d3.select(this)
+                .style("stroke", "none")
+                .style("stroke-width", 0)
+                .style("opacity", 0.8);
+              hideTooltip();
+            }
+          });
+      }
+
+      // ... (Bagian berikutnya dari drawScatterPlot tetap sama)
+
+      // 3. Histogram (Age Distribution by Campaign Response)
+      function drawHistogramChart(data) {
+        const svgId = "#histogram-chart";
+        const width =
+          d3.select(svgId).node().getBoundingClientRect().width -
+          margin.left -
+          margin.right;
+        const height = 450 - margin.top - margin.bottom;
+
+        d3.select(svgId).selectAll("*").remove();
+
+        const svg = d3
+          .select(svgId)
+          .attr(
+            "viewBox",
+            `0 0 ${width + margin.left + margin.right} ${
+              height + margin.top + margin.bottom
+            }`
+          )
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // Definisikan generator histogram dan bins usia
+        const x = d3
+          .scaleLinear()
+          // Filter usia yang valid (misalnya, di bawah 100)
+          .domain([d3.min(data, (d) => d.Age), d3.max(data, (d) => d.Age)])
+          .range([0, width]);
+
+        const histogram = d3
+          .histogram()
+          .value((d) => d.Age)
+          .domain(x.domain())
+          .thresholds(x.ticks(10)); // 10 bins
+
+        // Hitung bins untuk Respons=1 (Ya) dan Respons=0 (Tidak)
+        const binsYes = histogram(data.filter((d) => d.Response === 1));
+        const binsNo = histogram(data.filter((d) => d.Response === 0));
+
+        const maxCount = d3.max([
+          d3.max(binsYes, (d) => d.length),
+          d3.max(binsNo, (d) => d.length),
+        ]);
+
+        // Skala Y (Count)
+        const y = d3
+          .scaleLinear()
+          .domain([0, maxCount * 1.1])
+          .range([height, 0]);
+
+        // Axis X
+        svg
+          .append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x).ticks(10));
+
+        // Label Sumbu X
+        svg
+          .append("text")
+          .attr("class", "x-label")
+          .attr("x", width / 2)
+          .attr("y", height + margin.bottom - 10)
+          .style("text-anchor", "middle")
+          .style("fill", "#4a6fa5")
+          .style("font-weight", "bold")
+          .text("Usia Pelanggan");
+
+        // Axis Y
+        svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+
+        // Label Sumbu Y
+        svg
+          .append("text")
+          .attr("class", "y-label")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0 - margin.left)
+          .attr("x", 0 - height / 2)
+          .attr("dy", "1em")
+          .style("text-anchor", "middle")
+          .style("fill", "#4a6fa5")
+          .style("font-weight", "bold")
+          .text("Jumlah Pelanggan");
+
+        // --- PERHITUNGAN BAR BERSEBELAHAN (GROUPED BAR) ---
+        // Gunakan bin pertama untuk menghitung lebar, pastikan ada data (walaupun 0)
+        const firstBin = binsYes[0] || { x0: 0, x1: x.domain()[1] / 10 };
+        const binWidth = x(firstBin.x1) - x(firstBin.x0);
+        // Lebar bar individu: Bagi dua, kurangi 2 untuk memberikan sedikit jarak antar pasangan bar
+        const barWidth = binWidth / 2 - 2;
+
+        // Draw Bars (Respons = 0 / Merah) - Digeser ke Kiri
+        svg
+          .selectAll(".bar-no")
+          .data(binsNo)
+          .join(
+            (enter) =>
+              enter
+                .append("rect")
+                .attr("class", "bar-no")
+                // Posisi X: Mulai dari awal bin
+                .attr("x", (d) => x(d.x0))
+                .attr("y", height)
+                .attr("width", barWidth) // Lebar bar yang dibagi
+                .attr("height", 0)
+                .attr("fill", "#ef4444") // Merah
+                .attr("opacity", 1)
+                .attr("rx", 3)
+                .call((enter) =>
+                  enter
+                    .transition()
+                    .duration(800)
+                    .attr("y", (d) => y(d.length))
+                    .attr("height", (d) => height - y(d.length))
+                ),
+            (update) =>
+              update.call((update) =>
+                update
+                  .transition()
+                  .duration(800)
+                  .attr("x", (d) => x(d.x0))
+                  .attr("y", (d) => y(d.length))
+                  .attr("width", barWidth)
+                  .attr("height", (d) => height - y(d.length))
+              ),
+            (exit) =>
+              exit.call((exit) =>
+                exit
+                  .transition()
+                  .duration(500)
+                  .attr("height", 0)
+                  .attr("y", height)
+                  .remove()
+              )
+          )
+          .on("mouseover", function (event, d) {
+            d3.select(this).style("filter", "brightness(1.2)");
+            showTooltip(
+              `
+                <strong>Usia:</strong> ${Math.round(d.x0)} - ${Math.round(
+                d.x1
+              )}<br>
+                <strong>Respon (Tidak):</strong> ${d.length}
+                `,
+              event
+            );
+          })
+          .on("mouseout", function () {
+            d3.select(this).style("filter", null);
+            hideTooltip();
+          });
+
+        // Draw Bars (Respons = 1 / Hijau) - Digeser ke Kanan
+        svg
+          .selectAll(".bar-yes")
+          .data(binsYes)
+          .join(
+            (enter) =>
+              enter
+                .append("rect")
+                .attr("class", "bar-yes")
+                // Posisi X: Mulai dari awal bin + lebar bar (menggeser ke kanan) + 2 (untuk padding)
+                .attr("x", (d) => x(d.x0) + barWidth + 2)
+                .attr("y", height)
+                .attr("width", barWidth) // Lebar bar yang dibagi
+                .attr("height", 0)
+                .attr("fill", "#10b981") // Hijau
+                .attr("opacity", 1)
+                .attr("rx", 3)
+                .call((enter) =>
+                  enter
+                    .transition()
+                    .duration(800)
+                    .attr("y", (d) => y(d.length))
+                    .attr("height", (d) => height - y(d.length))
+                ),
+            (update) =>
+              update.call((update) =>
+                update
+                  .transition()
+                  .duration(800)
+                  .attr("x", (d) => x(d.x0) + barWidth + 2)
+                  .attr("y", (d) => y(d.length))
+                  .attr("width", barWidth)
+                  .attr("height", (d) => height - y(d.length))
+              ),
+            (exit) =>
+              exit.call((exit) =>
+                exit
+                  .transition()
+                  .duration(500)
+                  .attr("height", 0)
+                  .attr("y", height)
+                  .remove()
+              )
+          )
+          .on("mouseover", function (event, d) {
+            d3.select(this).style("filter", "brightness(1.2)");
+            showTooltip(
+              `
+                <strong>Usia:</strong> ${Math.round(d.x0)} - ${Math.round(
+                d.x1
+              )}<br>
+                <strong>Respon (Ya):</strong> ${d.length}
+                `,
+              event
+            );
+          })
+          .on("mouseout", function () {
+            d3.select(this).style("filter", null);
+            hideTooltip();
+          });
+      }
+
+      // 4. Bar Chart (Channel Performance)
+      function drawChannelChart(data) {
+        // ... (Kode drawChannelChart tetap sama)
+        const svgId = "#channel-chart";
+        const width =
+          d3.select(svgId).node().getBoundingClientRect().width -
+          margin.left -
+          margin.right;
+        const height = 300 - margin.top - margin.bottom;
+
+        d3.select(svgId).selectAll("*").remove();
+
+        const svg = d3
+          .select(svgId)
+          .attr(
+            "viewBox",
+            `0 0 ${width + margin.left + margin.right} ${
+              height + margin.top + margin.bottom
+            }`
+          )
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        const channelFields = [
+          "NumWebPurchases",
+          "NumCatalogPurchases",
+          "NumStorePurchases",
+        ];
+
+        // Hitung rata-rata pembelian per saluran
+        const channelData = channelFields.map((key) => ({
+          channel: key,
+          value: d3.mean(data, (d) => d[key]) || 0,
+        }));
+
+        // Skala X (Rata-rata Pembelian)
+        const x = d3
+          .scaleLinear()
+          .domain([0, d3.max(channelData, (d) => d.value) * 1.1])
+          .range([0, width]);
+
+        // Skala Y (Saluran)
+        const y = d3
+          .scaleBand()
+          .domain(channelData.map((d) => d.channel))
+          .range([0, height])
+          .padding(0.4);
+
+        // Axis X
+        svg
+          .append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x).ticks(5));
+
+        // Label Sumbu X
+        svg
+          .append("text")
+          .attr("class", "x-label")
+          .attr("x", width / 2)
+          .attr("y", height + margin.bottom - 10)
+          .style("text-anchor", "middle")
+          .style("fill", "#4a6fa5")
+          .style("font-weight", "bold")
+          .text("Rata-rata Jumlah Pembelian");
+
+        // Axis Y
+        const yAxis = d3
+          .axisLeft(y)
+          .tickFormat((d) => d.replace("Num", "").replace("Purchases", ""));
+        svg.append("g").attr("class", "y-axis").call(yAxis);
+
+        // Bar
+        const bars = svg
+          .selectAll(".channel-bar")
+          .data(channelData, (d) => d.channel)
+          .join(
+            (enter) =>
+              enter
+                .append("rect")
+                .attr("class", "channel-bar")
+                .attr("y", (d) => y(d.channel))
+                .attr("height", y.bandwidth())
+                .attr("x", 0)
+                .attr("width", 0)
+                .attr("fill", "#6366f1") // Indigo
+                .attr("rx", 4)
+                .attr("ry", 4)
+                .call((enter) =>
+                  enter
+                    .transition()
+                    .duration(800)
+                    .attr("width", (d) => x(d.value))
+                ),
+            (update) =>
+              update.call((update) =>
+                update
+                  .transition()
+                  .duration(800)
+                  .attr("y", (d) => y(d.channel))
+                  .attr("width", (d) => x(d.value))
+              ),
+            (exit) =>
+              exit.call((exit) =>
+                exit.transition().duration(500).attr("width", 0).remove()
+              )
+          )
+          .on("mouseover", function (event, d) {
+            d3.select(this).style("filter", "brightness(1.2)");
+            showTooltip(
+              `
+                        <strong>Saluran:</strong> ${d.channel
+                          .replace("Num", "")
+                          .replace("Purchases", "")}<br>
+                        Rata-rata Pembelian: ${d3.format(".2f")(d.value)}
+                        `,
+              event
+            );
+          })
+          .on("mouseout", function () {
+            d3.select(this).style("filter", null);
+            hideTooltip();
+          });
+      }
+
+      // 5. Campaign Acceptance Rate Chart (Bar Chart) - NEW
+      function drawCampaignChart(data) {
+        // ... (Kode drawCampaignChart tetap sama)
+        const svgId = "#campaign-chart";
+        const width =
+          d3.select(svgId).node().getBoundingClientRect().width -
+          margin.left -
+          margin.right;
+        const height = 300 - margin.top - margin.bottom;
+
+        d3.select(svgId).selectAll("*").remove();
+
+        const svg = d3
+          .select(svgId)
+          .attr(
+            "viewBox",
+            `0 0 ${width + margin.left + margin.right} ${
+              height + margin.top + margin.bottom
+            }`
+          )
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // 1. Hitung Tingkat Penerimaan (Acceptance Rate)
+        const campaignFields = [
+          "AcceptedCmp1",
+          "AcceptedCmp2",
+          "AcceptedCmp3",
+          "AcceptedCmp4",
+          "AcceptedCmp5",
+          "Response",
+        ];
+
+        const totalCustomers = data.length;
+
+        const campaignData = campaignFields.map((field) => {
+          const acceptedCount = data.filter((d) => d[field] === 1).length;
+          return {
+            campaign: field
+              .replace("AcceptedCmp", "Kampanye ")
+              .replace("Response", "Kampanye Akhir"),
+            rate:
+              totalCustomers > 0 ? (acceptedCount / totalCustomers) * 100 : 0,
+          };
+        });
+
+        // 2. Skala
+        const x = d3
+          .scaleBand()
+          .domain(campaignData.map((d) => d.campaign))
+          .range([0, width])
+          .padding(0.2);
+
+        const y = d3
+          .scaleLinear()
+          .domain([0, d3.max(campaignData, (d) => d.rate) * 1.1])
+          .range([height, 0]);
+
+        // 3. Axis
+        svg
+          .append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x).tickSize(0))
+          .selectAll("text")
+          .attr("dy", "1em")
+          .style("text-anchor", "middle");
+
+        svg
+          .append("g")
+          .attr("class", "y-axis")
+          .call(
+            d3
+              .axisLeft(y)
+              .ticks(5)
+              .tickFormat((d) => `${d}%`)
+          );
+
+        // Label Sumbu Y
+        svg
+          .append("text")
+          .attr("class", "y-label")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0 - margin.left)
+          .attr("x", 0 - height / 2)
+          .attr("dy", "1em")
+          .style("text-anchor", "middle")
+          .style("fill", "#4a6fa5")
+          .style("font-weight", "bold")
+          .text("Tingkat Penerimaan (%)");
+
+        // 4. Bar
+        const bars = svg
+          .selectAll(".bar")
+          .data(campaignData)
+          .enter()
+          .append("rect")
+          .attr("class", "bar")
+          .attr("x", (d) => x(d.campaign))
+          .attr("y", height) // Mulai dari bawah
+          .attr("width", x.bandwidth())
+          .attr("height", 0) // Mulai dengan tinggi 0
+          .attr("fill", "#10b981") // Warna hijau yang cerah (Emerald)
+          .attr("rx", 6) // Rounded corners
+          .attr("ry", 6)
+          .on("mouseover", function (event, d) {
+            d3.select(this).attr("fill", d3.color("#10b981").darker(0.5));
+            showTooltip(
+              `
+                        <strong>${d.campaign}:</strong><br>
+                        ${d3.format(".2f")(d.rate)}%
+                        `,
+              event
+            );
+          })
+          .on("mouseout", function () {
+            d3.select(this).attr("fill", "#10b981");
+            hideTooltip();
+          });
+
+        // Animasi Bar
+        bars
+          .transition()
+          .duration(1000)
+          .attr("y", (d) => y(d.rate))
+          .attr("height", (d) => height - y(d.rate))
+          .delay((d, i) => i * 100);
+
+        // Tambahkan Teks Nilai di Atas Bar
+        svg
+          .selectAll(".bar-label")
+          .data(campaignData)
+          .enter()
+          .append("text")
+          .attr("class", "bar-label")
+          .attr("x", (d) => x(d.campaign) + x.bandwidth() / 2)
+          .attr("y", (d) => y(d.rate) - 5)
+          .attr("text-anchor", "middle")
+          .style("fill", "#374151")
+          .style("font-size", "12px")
+          .style("font-weight", "600")
+          .text((d) => d3.format(".1f")(d.rate) + "%");
+      }
+
+      // --- MAIN LOGIC ---
+
+      // Fungsi utama untuk memuat data
+      function loadData() {
+        // Memuat data CSV, menggunakan tab (\t) sebagai delimiter
+        // Asumsi file marketing_campaign.csv diunggah dan dapat diakses
+        d3.dsv("\t", "marketing_campaign.csv")
+          .then((data) => {
+            fullData = preprocessData(data);
+            filteredData = fullData; // Awalnya, data yang difilter adalah data penuh
+
+            setupFilters();
+            updateAllCharts(fullData);
+
+            console.log(
+              "Data loaded and processed successfully. Total records:",
+              fullData.length
+            );
+          })
+          .catch((error) => {
+            console.error("Error loading or processing data:", error);
+          });
+      }
+
+      // Fungsi untuk memperbarui semua grafik dengan data baru
+      function updateAllCharts(data) {
+        drawProductChart(data);
+        drawScatterPlot(data);
+        drawHistogramChart(data);
+        drawChannelChart(data);
+        drawCampaignChart(data); // <-- Fungsi baru untuk Campaign Rate
+      }
+
+      // Panggil fungsi utama saat jendela dimuat
+      window.onload = loadData;
+    </script>
+  </body>
+</html>
