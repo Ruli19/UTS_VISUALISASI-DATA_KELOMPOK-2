@@ -1,4 +1,4 @@
-# 🛍️ Interactive Customer Analytics Dashboard
+# 🛍️ Interactive Marketing Campaign Dashboard
 
 ## Analisis Mendalam Pola Belanja dan Respons Kampanye Pemasaran
 
