@@ -1,51 +1,47 @@
 # 🛍️ Interactive Customer Analytics Dashboard
 
-Sebuah visualisasi interaktif yang dibangun menggunakan D3.js untuk eksplorasi perilaku belanja, demografi, dan tingkat respons kampanye pemasaran.
+## Analisis Mendalam Pola Belanja dan Respons Kampanye Pemasaran
 
-## 🚀 Live Demo (Visualisasi yang Telah Di-deploy)
+[](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/)
 
-Visualisasi ini di-deploy menggunakan GitHub Pages.
+Visualisasi interaktif ini dikembangkan menggunakan **D3.js v7** untuk memungkinkan eksplorasi terpandu (guided exploration) terhadap dataset Kampanye Pemasaran. Tujuannya adalah untuk memahami bagaimana demografi (Pendapatan, Pendidikan, Status Pernikahan) memengaruhi perilaku belanja dan tingkat respons terhadap promosi.
 
-**[Akses Dashboard Interaktif di Sini]([https://www.google.com/search?q=URL_GITHUB_PAGES_ANDA](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/))**
+## 🚀 Akses Visualisasi (Live Demo)
 
-## 🎯 Tujuan Proyek
+Visualisasi ini di-deploy dan dapat diakses publik melalui GitHub Pages:
 
-Visualisasi ini bertujuan untuk memungkinkan analisis terpandu (guided analysis) terhadap segmen pelanggan. Dengan memanfaatkan **Filter Dinamis Global**, pengguna dapat membandingkan pola belanja, pendapatan, usia, dan kinerja saluran pembelian antara subkelompok pelanggan yang berbeda (misalnya, membandingkan kelompok "Graduation" dengan "PhD", atau kelompok berpendapatan tinggi).
+➡️ **[Akses Dashboard Interaktif di Sini](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/)** ⬅️
 
-## 🛠️ Fitur Interaktif Utama
+## 🎯 Fitur Interaktif dan Animasi
 
-Proyek ini menerapkan interaksi tingkat lanjut yang dikoordinasikan di seluruh 5 visualisasi:
+Dashboard ini dirancang sebagai *Coordinated Multiple Views* (Tampilan Multi-Terkoordinasi) di mana setiap filter dan interaksi memengaruhi semua visualisasi secara serentak.
 
-1.  **Kueri Dinamis (Dynamic Query Filters):** Filter global (Pendidikan, Status Pernikahan, Pendapatan, Jumlah Anak) diterapkan secara *real-time* ke semua bagan.
-2.  **Transisi Halus (Animation):** Menggunakan D3 Transitions (`.transition()`) untuk pembaruan bagan yang mulus setelah pemfilteran.
-3.  **Detail-on-Demand (Tooltip):** Menyediakan nilai data yang presisi saat mengarahkan kursor ke elemen bagan.
-4.  **Brushing & Linking (Scatter Plot):** Memungkinkan seleksi kelompok pelanggan (brush) pada Scatter Plot Pengeluaran vs. Pendapatan, menampilkan statistik ringkasan seleksi tersebut dalam sebuah popup.
-5.  **Zooming & Panning:** Scatter Plot mendukung kontrol manual untuk memperbesar/memperkecil (zoom) dan menggeser (pan) untuk melihat outlier atau kluster secara rinci.
-6.  **Koordinasi Multi-Tampilan:** Kelima bagan diperbarui secara bersamaan setiap kali filter global berubah.
+| Teknik Interaksi | Deskripsi | Visualisasi Terkait |
+| :--- | :--- | :--- |
+| **Kueri Dinamis (Filter Global)** | Filter `Pendidikan`, `Status Pernikahan`, rentang `Pendapatan`, dan `Jumlah Anak` diperbarui secara *real-time* dan diterapkan ke **semua 5 bagan** sekaligus. | Semua Bagan |
+| **Brushing & Linking** | Pengguna dapat memilih area pada scatter plot (klik-drag) untuk melihat ringkasan statistik (Detail-on-Demand) subkelompok yang terseleksi. | Scatter Plot (Pengeluaran vs. Pendapatan) |
+| **Panning & Zooming** | Menggunakan tombol khusus untuk navigasi (geser dan perbesar/perkecil) area scatter plot yang padat. | Scatter Plot (Pengeluaran vs. Pendapatan) |
+| **Transisi & Animasi** | Penggunaan transisi D3 (`.transition().duration(800)`) untuk memperbarui batang (bar) dan titik (dot) secara halus, membantu pengguna melacak perubahan visual setelah filter diterapkan. | Semua Bagan Bar |
+| **Detail-on-Demand** | Tooltip yang muncul saat kursor diarahkan untuk menampilkan nilai numerik dan kontekstual yang presisi. | Semua Bagan |
 
-## 📜 Rationale Desain & Proses Pengembangan (Write-up)
+## 📜 Rasional Desain dan Proses Pengembangan (Write-up)
 
-Sesuai kriteria tugas, *write-up* (termasuk alasan mendalam untuk setiap keputusan desain, alokasi waktu, dan gambaran umum proses pengembangan) telah **di-embed langsung** di bagian **`Header`** dari [Halaman Visualisasi Interaktif]([https://www.google.com/search?q=URL_GITHUB_PAGES_ANDA](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/)) untuk menyajikan konteks analisis secara langsung kepada pembaca.
+**Seluruh tulisan (write-up)** yang berisi **Alasan Keputusan Desain** (Pemilihan jenis bagan, skema warna, dll.) dan **Gambaran Umum Proses Pengembangan** (Pembagian kerja, alokasi waktu, aspek yang memakan waktu) telah **disematkan langsung di dalam bagian `Header`** di [Halaman Visualisasi Interaktif](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/).
 
-## 📁 Struktur Repositori
+*Silakan buka tautan visualisasi di atas dan gulir ke bawah untuk melihat Laporan Pengembangan.*
 
+## 📚 Sumber Daya dan Acknowledgements
+
+  * **Data Source:** Dataset [Marketing Campaign](https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign) yang diolah dari Kaggle.
+  * **Visualization Tool:** D3.js v7
+  * **Implementasi:** Proyek Tugas Besar Mata Kuliah Visualisasi Data Kelompok 2.
+
+## 📁 Cara Mengunduh Kode Sumber (Clone Repository)
+
+Untuk mengunduh dan menjalankan proyek ini di lingkungan lokal Anda, gunakan perintah `git clone` berikut:
+
+```bash
+git clone https://github.com/ruli19/UTS_VISUALISASI-DATA_KELOMPOK-2.git
 ```
-/
-├── index.html        # File utama: HTML, CSS, JavaScript (D3.js) dan Write-up.
-├── marketing_campaign.csv # File data sumber (tab-delimited).
-└── README.md         # Dokumen ini.
-```
 
-## 📚 Sumber Data & Acknowledge
-
-  * **Data Source:** [Marketing Campaign Dataset](https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign) dari Kaggle.
-  * **Visualization Library:** [D3.js v7](https://d3js.org/)
-  * **Inspirasi Desain:** Konsep *Coordinated Multiple Views* (CMV) dan teknik *Brushing & Linking* dari eksplorasi data.
-
-## ⚙️ Cara Menjalankan Secara Lokal
-
-Jika Anda ingin menjalankan proyek ini di komputer Anda tanpa mengandalkan GitHub Pages:
-
-1.  **Clone repositori** ini.
-2.  Pastikan `index.html` dan `marketing_campaign.csv` berada dalam satu folder.
-3.  Buka `index.html` di browser web modern. (Anda mungkin perlu menggunakan *live server* di beberapa browser untuk memuat file CSV dengan benar, terutama jika ada masalah CORS).
+Setelah di-clone, pastikan file `marketing_campaign.csv` berada di direktori yang sama dengan `index.html`.
