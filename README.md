@@ -1,4 +1,3 @@
-# UTS_VISUALISASI-DATA_KELOMPOK-2
 # 🛍️ Interactive Customer Analytics Dashboard
 
 Sebuah visualisasi interaktif yang dibangun menggunakan D3.js untuk eksplorasi perilaku belanja, demografi, dan tingkat respons kampanye pemasaran.
@@ -8,7 +7,6 @@ Sebuah visualisasi interaktif yang dibangun menggunakan D3.js untuk eksplorasi p
 Visualisasi ini di-deploy menggunakan GitHub Pages.
 
 **[Akses Dashboard Interaktif di Sini]([https://www.google.com/search?q=URL_GITHUB_PAGES_ANDA](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/))**
-*(Ganti URL ini dengan tautan GitHub Pages Anda setelah di-deploy, contoh: `https://username.github.io/nama-repositori`)*
 
 ## 🎯 Tujuan Proyek
 
@@ -27,7 +25,7 @@ Proyek ini menerapkan interaksi tingkat lanjut yang dikoordinasikan di seluruh 5
 
 ## 📜 Rationale Desain & Proses Pengembangan (Write-up)
 
-Sesuai kriteria tugas, *write-up* (termasuk alasan mendalam untuk setiap keputusan desain, alokasi waktu, dan gambaran umum proses pengembangan) telah **di-embed langsung** di bagian **`Header`** dari [Halaman Visualisasi Interaktif](https://www.google.com/search?q=URL_GITHUB_PAGES_ANDA) untuk menyajikan konteks analisis secara langsung kepada pembaca.
+Sesuai kriteria tugas, *write-up* (termasuk alasan mendalam untuk setiap keputusan desain, alokasi waktu, dan gambaran umum proses pengembangan) telah **di-embed langsung** di bagian **`Header`** dari [Halaman Visualisasi Interaktif]([https://www.google.com/search?q=URL_GITHUB_PAGES_ANDA](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/)) untuk menyajikan konteks analisis secara langsung kepada pembaca.
 
 ## 📁 Struktur Repositori
 
