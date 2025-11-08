@@ -7,7 +7,7 @@ Sebuah visualisasi interaktif yang dibangun menggunakan D3.js untuk eksplorasi p
 
 Visualisasi ini di-deploy menggunakan GitHub Pages.
 
-**[Akses Dashboard Interaktif di Sini](https://www.google.com/search?q=URL_GITHUB_PAGES_ANDA)**
+**[Akses Dashboard Interaktif di Sini]([https://www.google.com/search?q=URL_GITHUB_PAGES_ANDA](https://ruli19.github.io/UTS_VISUALISASI-DATA_KELOMPOK-2/))**
 *(Ganti URL ini dengan tautan GitHub Pages Anda setelah di-deploy, contoh: `https://username.github.io/nama-repositori`)*
 
 ## 🎯 Tujuan Proyek
